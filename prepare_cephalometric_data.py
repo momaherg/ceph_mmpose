@@ -8,17 +8,15 @@ from sklearn.model_selection import train_test_split
 import ast
 
 # Define landmark columns
-landmark_cols = [
-    'sella_x', 'sella_y', 'nasion_x', 'nasion_y', 'A point_x', 'A point_y',
-    'B point_x', 'B point_y', 'upper 1 tip_x', 'upper 1 tip_y',
-    'upper 1 apex_x', 'upper 1 apex_y', 'lower 1 tip_x', 'lower 1 tip_y',
-    'lower 1 apex_x', 'lower 1 apex_y', 'ANS_x', 'ANS_y', 'PNS_x', 'PNS_y',
-    'Gonion x', 'Gonion y', 'Menton_x', 'Menton_y', 'ST Nasion_x',
-    'ST Nasion_y', 'Tip of the nose_x', 'Tip of the nose_y', 'Subnasal_x',
-    'Subnasal_y', 'Upper lip_x', 'Upper lip_y', 'Lower lip_x',
-    'Lower lip_y', 'ST Pogonion_x', 'ST Pogonion_y', 'gnathion_x',
-    'gnathion_y'
-]
+landmark_cols = ['sella_x', 'sella_y', 'nasion_x', 'nasion_y', 'A point_x', 'A point_y',
+       'B point_x', 'B point_y', 'upper 1 tip_x', 'upper 1 tip_y',
+       'upper 1 apex_x', 'upper 1 apex_y', 'lower 1 tip_x', 'lower 1 tip_y',
+       'lower 1 apex_x', 'lower 1 apex_y', 'ANS_x', 'ANS_y', 'PNS_x', 'PNS_y',
+       'Gonion _x', 'Gonion _y', 'Menton_x', 'Menton_y', 'ST Nasion_x',
+       'ST Nasion_y', 'Tip of the nose_x', 'Tip of the nose_y', 'Subnasal_x',
+       'Subnasal_y', 'Upper lip_x', 'Upper lip_y', 'Lower lip_x',
+       'Lower lip_y', 'ST Pogonion_x', 'ST Pogonion_y', 'gnathion_x',
+       'gnathion_y']
 
 # Create directories
 os.makedirs('data/cephalometric/images/train', exist_ok=True)
