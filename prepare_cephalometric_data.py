@@ -1,7 +1,7 @@
 import os
-import pickle
 import json
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 import cv2
 from sklearn.model_selection import train_test_split
@@ -24,10 +24,9 @@ os.makedirs('data/cephalometric/images/train', exist_ok=True)
 os.makedirs('data/cephalometric/images/val', exist_ok=True)
 os.makedirs('data/cephalometric/annotations', exist_ok=True)
 
-# Load pickle file
-print("Loading pickle data...")
-with open('data/train_data_pure_depth.pkl', 'rb') as f:
-    data = pickle.load(f)
+# Load JSON data using pandas
+print("Loading data from JSON...")
+data = pd.read_json("data/train_data_pure_old_numpy.json")
 
 # Extract landmark names (without _x, _y)
 landmark_names = []
