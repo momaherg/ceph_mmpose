@@ -2,9 +2,8 @@
 import os
 import argparse
 import torch
-# import mmcv
-from mmcv import Config
-from mmcv import DictAction
+import mmcv
+from mmcv import Config, DictAction
 from mmcv.runner import init_dist, set_random_seed
 from mmpose.apis import train_model
 from mmpose.datasets import build_dataset
