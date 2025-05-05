@@ -33,23 +33,34 @@ data = pd.read_json("/content/drive/MyDrive/Lala's Masters/train_data_pure_old_n
 def convert_to_numpy_array(img_data):
     # If the data is already a numpy array
     if isinstance(img_data, np.ndarray):
-        return img_data
-    
+        img_array = img_data
     # If the data is a string representation of a list/array
-    if isinstance(img_data, str):
+    elif isinstance(img_data, str):
         try:
             # Try to convert string representation to actual array
             img_array = np.array(ast.literal_eval(img_data))
-            return img_array
         except:
             print("Error converting string to array")
-    
+            return None
     # For other formats, try direct conversion
-    try:
-        return np.array(img_data)
-    except:
-        print("Failed to convert to numpy array")
-        return None
+    else:
+        try:
+            img_array = np.array(img_data)
+        except:
+            print("Failed to convert to numpy array")
+            return None
+    
+    # Check if the array is a flattened image (like 50176, 3)
+    if len(img_array.shape) == 2 and img_array.shape[0] == 50176 and img_array.shape[1] == 3:
+        # Reshape to 224x224x3 (assuming this is the original shape)
+        img_array = img_array.reshape(224, 224, 3)
+    
+    # For grayscale depth images that might be flattened (50176,)
+    if len(img_array.shape) == 1 and img_array.shape[0] == 50176:
+        # Reshape to 224x224
+        img_array = img_array.reshape(224, 224)
+        
+    return img_array
 
 # Extract landmark names (without _x, _y)
 landmark_names = []
@@ -93,9 +104,13 @@ for idx, i in enumerate(tqdm(train_indices)):
         depth_img = depth_img.astype(np.float32)
         # Normalize to 0-255
         depth_img = ((depth_img - depth_img.min()) / (depth_img.max() - depth_img.min() + 1e-10) * 255).astype(np.uint8)
-        # Convert to RGB
-        depth_img_rgb = cv2.cvtColor(depth_img, cv2.COLOR_GRAY2RGB)
-        img = depth_img_rgb
+        
+        # If the depth image is grayscale, convert to RGB
+        if len(depth_img.shape) == 2:
+            depth_img_rgb = cv2.cvtColor(depth_img, cv2.COLOR_GRAY2RGB)
+            img = depth_img_rgb
+        else:
+            img = depth_img
     else:
         # Use regular image
         image_data = data.iloc[i]['Image']
@@ -106,9 +121,18 @@ for idx, i in enumerate(tqdm(train_indices)):
             continue
     
     # Check that image is a valid numpy array with correct dimensions
-    if not isinstance(img, np.ndarray) or len(img.shape) != 3 or img.shape[2] != 3:
-        print(f"Skipping image {img_id} with invalid shape: {img.shape if isinstance(img, np.ndarray) else 'not numpy array'}")
+    if not isinstance(img, np.ndarray):
+        print(f"Skipping image {img_id}: not a numpy array")
         continue
+    
+    # Ensure image has 3 channels for RGB
+    if len(img.shape) != 3 or img.shape[2] != 3:
+        print(f"Converting image {img_id} with shape {img.shape} to RGB")
+        if len(img.shape) == 2:  # Grayscale
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        else:
+            print(f"Skipping image {img_id} with incompatible shape: {img.shape}")
+            continue
     
     cv2.imwrite(f"data/cephalometric/images/train/{img_filename}", img)
     
@@ -159,9 +183,13 @@ for idx, i in enumerate(tqdm(val_indices)):
         depth_img = depth_img.astype(np.float32)
         # Normalize to 0-255
         depth_img = ((depth_img - depth_img.min()) / (depth_img.max() - depth_img.min() + 1e-10) * 255).astype(np.uint8)
-        # Convert to RGB
-        depth_img_rgb = cv2.cvtColor(depth_img, cv2.COLOR_GRAY2RGB)
-        img = depth_img_rgb
+        
+        # If the depth image is grayscale, convert to RGB
+        if len(depth_img.shape) == 2:
+            depth_img_rgb = cv2.cvtColor(depth_img, cv2.COLOR_GRAY2RGB)
+            img = depth_img_rgb
+        else:
+            img = depth_img
     else:
         # Use regular image
         image_data = data.iloc[i]['Image']
@@ -172,9 +200,18 @@ for idx, i in enumerate(tqdm(val_indices)):
             continue
     
     # Check that image is a valid numpy array with correct dimensions
-    if not isinstance(img, np.ndarray) or len(img.shape) != 3 or img.shape[2] != 3:
-        print(f"Skipping image {img_id} with invalid shape: {img.shape if isinstance(img, np.ndarray) else 'not numpy array'}")
+    if not isinstance(img, np.ndarray):
+        print(f"Skipping image {img_id}: not a numpy array")
         continue
+    
+    # Ensure image has 3 channels for RGB
+    if len(img.shape) != 3 or img.shape[2] != 3:
+        print(f"Converting image {img_id} with shape {img.shape} to RGB")
+        if len(img.shape) == 2:  # Grayscale
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        else:
+            print(f"Skipping image {img_id} with incompatible shape: {img.shape}")
+            continue
     
     cv2.imwrite(f"data/cephalometric/images/val/{img_filename}", img)
     
