@@ -2,7 +2,7 @@
 import os
 import argparse
 import torch
-import mmcv
+# import mmcv
 from mmcv import Config
 from mmcv import DictAction
 from mmcv.runner import init_dist, set_random_seed
