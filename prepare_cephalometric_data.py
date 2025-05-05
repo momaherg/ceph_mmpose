@@ -5,6 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 import cv2
 from sklearn.model_selection import train_test_split
+import ast
 
 # Define landmark columns
 landmark_cols = [
@@ -27,6 +28,28 @@ os.makedirs('data/cephalometric/annotations', exist_ok=True)
 # Load JSON data using pandas
 print("Loading data from JSON...")
 data = pd.read_json("/content/drive/MyDrive/Lala's Masters/train_data_pure_old_numpy.json")
+
+# Helper function to convert image data to numpy array
+def convert_to_numpy_array(img_data):
+    # If the data is already a numpy array
+    if isinstance(img_data, np.ndarray):
+        return img_data
+    
+    # If the data is a string representation of a list/array
+    if isinstance(img_data, str):
+        try:
+            # Try to convert string representation to actual array
+            img_array = np.array(ast.literal_eval(img_data))
+            return img_array
+        except:
+            print("Error converting string to array")
+    
+    # For other formats, try direct conversion
+    try:
+        return np.array(img_data)
+    except:
+        print("Failed to convert to numpy array")
+        return None
 
 # Extract landmark names (without _x, _y)
 landmark_names = []
@@ -60,15 +83,32 @@ for idx, i in enumerate(tqdm(train_indices)):
     # Check if we have depth feature or image
     if 'depth_feature' in data.columns:
         # Process depth feature (convert to RGB for compatibility)
-        depth_img = data.iloc[i]['depth_feature'].astype(np.float32)
+        depth_data = data.iloc[i]['depth_feature']
+        depth_img = convert_to_numpy_array(depth_data)
+        
+        if depth_img is None:
+            print(f"Skipping image {img_id} due to conversion error")
+            continue
+            
+        depth_img = depth_img.astype(np.float32)
         # Normalize to 0-255
-        depth_img = ((depth_img - depth_img.min()) / (depth_img.max() - depth_img.min()) * 255).astype(np.uint8)
+        depth_img = ((depth_img - depth_img.min()) / (depth_img.max() - depth_img.min() + 1e-10) * 255).astype(np.uint8)
         # Convert to RGB
         depth_img_rgb = cv2.cvtColor(depth_img, cv2.COLOR_GRAY2RGB)
         img = depth_img_rgb
     else:
         # Use regular image
-        img = data.iloc[i]['Image']
+        image_data = data.iloc[i]['Image']
+        img = convert_to_numpy_array(image_data)
+        
+        if img is None:
+            print(f"Skipping image {img_id} due to conversion error")
+            continue
+    
+    # Check that image is a valid numpy array with correct dimensions
+    if not isinstance(img, np.ndarray) or len(img.shape) != 3 or img.shape[2] != 3:
+        print(f"Skipping image {img_id} with invalid shape: {img.shape if isinstance(img, np.ndarray) else 'not numpy array'}")
+        continue
     
     cv2.imwrite(f"data/cephalometric/images/train/{img_filename}", img)
     
@@ -109,15 +149,32 @@ for idx, i in enumerate(tqdm(val_indices)):
     # Check if we have depth feature or image
     if 'depth_feature' in data.columns:
         # Process depth feature (convert to RGB for compatibility)
-        depth_img = data.iloc[i]['depth_feature'].astype(np.float32)
+        depth_data = data.iloc[i]['depth_feature']
+        depth_img = convert_to_numpy_array(depth_data)
+        
+        if depth_img is None:
+            print(f"Skipping image {img_id} due to conversion error")
+            continue
+            
+        depth_img = depth_img.astype(np.float32)
         # Normalize to 0-255
-        depth_img = ((depth_img - depth_img.min()) / (depth_img.max() - depth_img.min()) * 255).astype(np.uint8)
+        depth_img = ((depth_img - depth_img.min()) / (depth_img.max() - depth_img.min() + 1e-10) * 255).astype(np.uint8)
         # Convert to RGB
         depth_img_rgb = cv2.cvtColor(depth_img, cv2.COLOR_GRAY2RGB)
         img = depth_img_rgb
     else:
         # Use regular image
-        img = data.iloc[i]['Image']
+        image_data = data.iloc[i]['Image']
+        img = convert_to_numpy_array(image_data)
+        
+        if img is None:
+            print(f"Skipping image {img_id} due to conversion error")
+            continue
+    
+    # Check that image is a valid numpy array with correct dimensions
+    if not isinstance(img, np.ndarray) or len(img.shape) != 3 or img.shape[2] != 3:
+        print(f"Skipping image {img_id} with invalid shape: {img.shape if isinstance(img, np.ndarray) else 'not numpy array'}")
+        continue
     
     cv2.imwrite(f"data/cephalometric/images/val/{img_filename}", img)
     
