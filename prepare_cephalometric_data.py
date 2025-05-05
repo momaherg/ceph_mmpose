@@ -26,7 +26,7 @@ os.makedirs('data/cephalometric/annotations', exist_ok=True)
 
 # Load JSON data using pandas
 print("Loading data from JSON...")
-data = pd.read_json("data/train_data_pure_old_numpy.json")
+data = pd.read_json("/content/drive/MyDrive/Lala's Masters/train_data_pure_old_numpy.json")
 
 # Extract landmark names (without _x, _y)
 landmark_names = []
